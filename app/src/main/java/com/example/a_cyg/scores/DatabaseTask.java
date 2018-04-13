@@ -36,7 +36,7 @@ public class DatabaseTask extends AsyncTask {
     protected Object doInBackground(Object[] objects) {
 
         String link = "http://13.56.107.102/scores/public/api/tetris_scores";
-
+        //String link = "http://13.56.107.102/scores/public/api/tetris_scores/fire";
         switch(method) {
             case METHOD_GET:
                 try {

@@ -50,11 +50,13 @@ public class ScoreAdapter extends RecyclerView.Adapter<ScoreAdapter.ViewHolder> 
         try {
             JSONObject currentData = (JSONObject) dataSet.get(position);
             View view = holder.mView;
+
             TextView nameField = ((TextView) view.findViewById(R.id.player_name));
             TextView scoreField = ((TextView) view.findViewById(R.id.player_score));
             TextView dateField = ((TextView) view.findViewById(R.id.player_date));
+
             nameField.setText((String) currentData.get("name"));
-            scoreField.setText((String) currentData.get("score"));
+            scoreField.setText(Integer.toString((Integer) currentData.get("score")));
             dateField.setText((String) currentData.get("date"));
         } catch (Exception e) {
             Log.e("MyAdapter", e.getMessage());
