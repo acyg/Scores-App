@@ -35,14 +35,15 @@ public class DatabaseTask extends AsyncTask {
     @Override
     protected Object doInBackground(Object[] objects) {
 
-        String link = "http://13.56.107.102/scores/public/api/tetris_scores";
-        //String link = "http://13.56.107.102/scores/public/api/tetris_scores/fire";
-        switch(method) {
-            case METHOD_GET:
-                try {
-                    URL url = new URL(link);
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                    urlConnection.setRequestMethod(method);
+        String link = "http://13.56.107.102/scores/public/api/tetris_scores" + (method.equals(METHOD_POST) ? "/add" : "");
+
+        try {
+            URL url = new URL(link);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod(method);
+            switch(method) {
+                case METHOD_GET:
+
                     urlConnection.connect();
                     if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -57,16 +58,10 @@ public class DatabaseTask extends AsyncTask {
                         return sb.toString();
                     } else Log.d("DatabaseTask - get", "Connection status: " + urlConnection.getResponseMessage());
                     urlConnection.disconnect();
-                } catch (Exception e) {
-                    Log.e("DatabaseTask - get", e.getMessage());
-                }
-                break;
-            case METHOD_POST:
-                link += "/add";
-                try {
-                    URL url = new URL(link);
 
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    break;
+                case METHOD_POST:
+
                     urlConnection.setDoOutput(true);
                     urlConnection.setChunkedStreamingMode(0);
                     urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -89,11 +84,12 @@ public class DatabaseTask extends AsyncTask {
                         return sb.toString();
                     } else Log.d("DatabaseTask - post", "Connection status: " + urlConnection.getResponseMessage());
                     urlConnection.disconnect();
-                } catch (Exception e) {
-                    Log.e("DatabaseTask - post", e.getMessage());
-                }
-                break;
 
+                    break;
+
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseTask - get", e.getMessage());
         }
         return null;
     }
@@ -110,9 +106,9 @@ public class DatabaseTask extends AsyncTask {
                 break;
             case METHOD_POST:
                 try {
-                    JSONArray jary = new JSONArray();
-                    jary.put(new JSONObject((String) result));
-                    mCallback.onResult(jary);
+                    JSONArray j_ary = new JSONArray();
+                    j_ary.put(new JSONObject((String) result));
+                    mCallback.onResult(j_ary);
                 } catch (Exception e) {
                     Log.e("DatabaseTask - get", e.getMessage());
                 }
