@@ -21,6 +21,7 @@ import com.google.firebase.database.ValueEventListener;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton upload = (FloatingActionButton) findViewById(R.id.upload);
+        FloatingActionButton upload = (FloatingActionButton) findViewById(R.id.upload_activity);
         upload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -59,55 +60,13 @@ public class MainActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        //new DatabaseTask(DatabaseTask.METHOD_GET, mDataCallback).execute();
         database = FirebaseDatabase.getInstance();
         dataRef = database.getReference("scores/tetris");
 
         dataRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    String jstring = dataSnapshot.getValue().toString();
-                    JSONObject jobj = new JSONObject(jstring);
-
-                    Iterator<String> keys = jobj.keys();
-                    JSONArray jary = new JSONArray();
-
-                    while(keys.hasNext()) {
-                        jary.put(jobj.get(keys.next()));
-                    }
-
-                    JSONObject[] _jary = new JSONObject[jary.length()];
-
-                    for(int i = 0;i < jary.length();i++) {
-                        _jary[i] = (JSONObject) jary.get(i);
-                    }
-
-                    Comparator<JSONObject> cmp = new Comparator<JSONObject>() {
-                        @Override
-                        public int compare(JSONObject o1, JSONObject o2) {
-                            try {
-                                return (Integer) o2.get("score") - (Integer) o1.get("score");
-                            } catch (Exception e) {
-                                return 0;
-                            }
-                        }
-                    };
-
-                    Arrays.sort(_jary, cmp);
-                    jary = new JSONArray(_jary);
-
-                    mAdapter = new ScoreAdapter(jary);
-                    mRecyclerView.setAdapter(mAdapter);
-
-                } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
+                setupView(dataSnapshot);
             }
 
             @Override
@@ -115,10 +74,49 @@ public class MainActivity extends AppCompatActivity {
                 Log.w(TAG, "Failed to read value.", databaseError.toException());
             }
         });
+
     }
 
-    public interface dataCallback {
-        void onResult(JSONArray jsonArray);
+    public void setupView(DataSnapshot dataSnapshot) {
+        try {
+            Object value = dataSnapshot.getValue();
+            JSONArray dataSet;
+
+            if(value != null) {
+                JSONObject dataObj = new JSONObject(value.toString());
+
+                Iterator<String> keys = dataObj.keys();
+                ArrayList<JSONObject> dataList = new ArrayList<JSONObject>();
+
+                while (keys.hasNext()) {
+                    dataList.add((JSONObject) dataObj.get(keys.next()));
+                }
+
+                JSONObject[] dataArray = new JSONObject[dataList.size()];
+                dataList.toArray(dataArray);
+
+                Comparator<JSONObject> cmp = new Comparator<JSONObject>() {
+                    @Override
+                    public int compare(JSONObject o1, JSONObject o2) {
+                        try {
+                            return (Integer) o2.get("score") - (Integer) o1.get("score");
+                        } catch (Exception e) {
+                            return 0;
+                        }
+                    }
+                };
+
+                Arrays.sort(dataArray, cmp);
+                dataSet = new JSONArray(dataArray);
+
+            } else dataSet = new JSONArray();
+
+            mAdapter = new ScoreAdapter(dataSet);
+            mRecyclerView.setAdapter(mAdapter);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     @Override
